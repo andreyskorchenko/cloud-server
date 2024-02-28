@@ -10,6 +10,6 @@ services:
     ports:
       - "5413:5432"
     environment:
-      POSTGRES_DB: db_cloud
-      POSTGRES_USER: admin_cloud
-      POSTGRES_PASSWORD: q2w3e13
+      POSTGRES_DB: cloud
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: xLx210ET5EMkD
