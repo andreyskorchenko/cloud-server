@@ -6,7 +6,7 @@ services:
     container_name: db_cloud
     restart: always
     volumes:
-      - ~/db_cloud:/var/lib/postgresql/data
+      - ~/Documents/Development/databases/db_cloud:/var/lib/postgresql/data
     ports:
       - "5454:5432"
     environment:
