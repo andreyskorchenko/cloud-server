@@ -10,6 +10,6 @@ services:
     ports:
       - '27027:27017'
     environment:
-      MONGO_INITDB_DATABASE: db_cloud
+      MONGO_INITDB_DATABASE: cloud
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: xLx210ET5EMkD
