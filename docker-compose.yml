@@ -1,15 +1,15 @@
-version: '3.9'
+version: '3.1'
 
 services:
-  db:
-    image: postgres:16.2
+  mongo:
+    image: mongo:5.0
     container_name: db_cloud
     restart: always
     volumes:
-      - ~/Documents/Development/databases/db_cloud:/var/lib/postgresql/data
+      - ~/Documents/Development/databases/db_cloud:/data/db
     ports:
-      - "5454:5432"
+      - '27027:27017'
     environment:
-      POSTGRES_DB: cloud
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: xLx210ET5EMkD
+      MONGO_INITDB_DATABASE: db_cloud
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: xLx210ET5EMkD
