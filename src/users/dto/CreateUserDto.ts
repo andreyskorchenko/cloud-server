@@ -25,7 +25,7 @@ export class CreateUserDto {
             minSymbols: 0,
         },
         {
-            message: 'The minimum password length is 6 characters, one number, a lowercase and an uppercase letter',
+            message: 'Minimum password length is 6 characters, one number, a lowercase and an uppercase letter',
         },
     )
     password: string;
