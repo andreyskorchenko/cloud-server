@@ -1,18 +1,14 @@
-import { Controller, Post, Req, Res, HttpCode } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Controller, Post, UsePipes, ValidationPipe, Body } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { CreateUserDto } from '../users/dto/CreateUserDto';
 
 @Controller('auth')
 export class AuthController {
-    @Post('signin')
-    @HttpCode(200)
-    signin(@Req() req: Request, @Res() res: Response) {
-        console.log(req.body);
-        res.end('signin');
-    }
+    constructor(private authService: AuthService) {}
 
     @Post('signup')
-    signup(@Req() req: Request, @Res() res: Response) {
-        console.log(req.body);
-        res.end('signup');
+    @UsePipes(new ValidationPipe())
+    async signup(@Body() userDto: CreateUserDto) {
+        return await this.authService.create(userDto);
     }
 }
