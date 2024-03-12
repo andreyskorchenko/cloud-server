@@ -8,7 +8,7 @@ export const JwtOptions: JwtModuleAsyncOptions = {
         global: true,
         secret: configService.get('JWT_SECRET'),
         signOptions: {
-            expiresIn: '15m',
+            expiresIn: configService.get('JWT_EXPIRESIN_ACCESS'),
         },
     }),
 };
