@@ -1,5 +1,6 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { Roles } from '@/auth/constants';
 
 @Schema()
 export class User {
@@ -9,14 +10,17 @@ export class User {
     @Prop({ required: true })
     lastname: string;
 
-    @Prop({ required: true })
+    @Prop({ required: true, unique: true })
     nickname: string;
 
-    @Prop({ required: true })
+    @Prop({ required: true, unique: true })
     email: string;
 
     @Prop({ required: true, default: false })
     confirmedEmail: boolean;
+
+    @Prop({ required: true, default: [Roles.USER] })
+    roles: Roles[];
 
     @Prop({ required: true })
     password: string;
