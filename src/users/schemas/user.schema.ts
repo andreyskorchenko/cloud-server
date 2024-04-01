@@ -1,5 +1,6 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { UserDevice } from '@/users/interfaces';
 import { Roles } from '@/auth/constants';
 
 @Schema()
@@ -21,6 +22,9 @@ export class User {
 
     @Prop({ required: true, default: [Roles.USER] })
     roles: Roles[];
+
+    @Prop({ required: true })
+    devices: UserDevice[];
 
     @Prop({ required: true })
     password: string;
