@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
-import { UserSchema } from './schemas/user.schema';
+import { UsersController, UsersService } from '@/users';
+import { UserSchema } from '@/users/schemas';
+import { JwtOptions } from '@/auth/config';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
     imports: [
+        JwtModule.registerAsync(JwtOptions),
         MongooseModule.forFeature([
             {
                 name: 'users',
