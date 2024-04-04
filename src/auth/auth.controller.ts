@@ -1,8 +1,8 @@
 import { Controller, Post, HttpCode, UsePipes, ValidationPipe, Body } from '@nestjs/common';
 import { BrowserFingerprint } from '@/auth/decorators';
+import { AuthService } from '@/auth/auth.service';
 import { CreateUserDto } from '@/users/dto';
 import { SigninUserDto } from '@/auth/dto';
-import { AuthService } from '@/auth';
 
 @Controller('auth')
 export class AuthController {
