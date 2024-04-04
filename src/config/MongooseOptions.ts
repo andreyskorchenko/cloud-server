@@ -5,7 +5,7 @@ export const MongooseOptions: MongooseModuleAsyncOptions = {
     imports: [ConfigModule],
     inject: [ConfigService],
     useFactory: (configService: ConfigService) => ({
-        uri: 'mongodb://localhost:27027',
+        uri: configService.get('DB_URL'),
         dbName: configService.get('DB_NAME'),
         auth: {
             username: configService.get('DB_USERNAME'),
