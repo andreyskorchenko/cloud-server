@@ -5,22 +5,25 @@ import { UserDevice } from '@/users/interfaces';
 
 @Schema()
 export class User {
-    @Prop({ required: true })
+    @Prop({ required: true, trim: true, lowercase: true })
     firstname: string;
 
-    @Prop({ required: true })
+    @Prop({ required: true, trim: true, lowercase: true })
     lastname: string;
 
-    @Prop({ required: true, unique: true })
+    @Prop({ required: true, trim: true, lowercase: true, unique: true })
     nickname: string;
 
-    @Prop({ required: true, unique: true })
+    @Prop({ required: true, trim: true, lowercase: true, unique: true })
     email: string;
 
     @Prop({ required: true, default: false })
     confirmedEmail: boolean;
 
-    @Prop({ required: true, default: [Roles.ADMIN] })
+    @Prop({ required: true })
+    confirmationToken: string;
+
+    @Prop({ required: true, default: () => [Roles.ADMIN] })
     roles: Roles[];
 
     @Prop({ required: true })
