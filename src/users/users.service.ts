@@ -39,10 +39,7 @@ export class UsersService {
         return model.save();
     }
 
-    async findOneByNicknameOrEmail({
-        nickname,
-        email,
-    }: Record<keyof Pick<CreateUserDto, 'nickname' | 'email'>, string>) {
+    findOneByNicknameOrEmail({ nickname, email }: Record<keyof Pick<CreateUserDto, 'nickname' | 'email'>, string>) {
         return this.userModel.findOne().or([{ nickname }, { email }]).exec();
     }
 }
