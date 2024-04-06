@@ -5,6 +5,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
 import { UserDocument } from '@/users/schemas';
+import { UserDevice } from '@/users/interfaces';
 import { JwtPayload } from '@/auth/interfaces';
 import { CreateUserDto } from '@/users/dto';
 
@@ -41,5 +42,52 @@ export class UsersService {
 
     findOneByNicknameOrEmail({ nickname, email }: Record<keyof Pick<CreateUserDto, 'nickname' | 'email'>, string>) {
         return this.userModel.findOne().or([{ nickname }, { email }]).exec();
+    }
+
+    addDevice(user: UserDocument, token: string, fingerprint: null | string) {
+        const devices = user.devices
+            .reduce(
+                ([nullabels, fingerprints], device) => {
+                    if (device.fingerprint === null) {
+                        nullabels.push(device);
+                    } else {
+                        fingerprints.push(device);
+                    }
+
+                    return [nullabels, fingerprints];
+                },
+                [[] as UserDevice[], [] as UserDevice[]],
+            )
+            .map((devices) => {
+                return [...devices].sort((a, b) => {
+                    return new Date(a.lastUpdate).getTime() - new Date(b.lastUpdate).getTime();
+                });
+            })
+            .flat();
+
+        const idxDevice = devices.findIndex((device) => device.fingerprint === fingerprint);
+        if (idxDevice >= 0) {
+            devices.splice(idxDevice, 1, {
+                token,
+                fingerprint,
+                lastUpdate: new Date(),
+            });
+        } else {
+            if (devices.length < this.configService.get('MAX_SIGNIN_DEVICES')) {
+                devices.push({
+                    token,
+                    fingerprint,
+                    lastUpdate: new Date(),
+                });
+            } else {
+                devices.splice(0, 1, {
+                    token,
+                    fingerprint,
+                    lastUpdate: new Date(),
+                });
+            }
+        }
+
+        return this.userModel.updateOne({ _id: user.id }, { devices });
     }
 }
