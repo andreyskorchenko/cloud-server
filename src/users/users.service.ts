@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
 import { UserDocument } from '@/users/schemas';
@@ -89,5 +89,22 @@ export class UsersService {
         }
 
         return this.userModel.updateOne({ _id: user.id }, { devices });
+    }
+
+    async emailConfirmation(confirmationToken: string) {
+        const user = await this.userModel.findOne({ confirmationToken });
+
+        if (!user || user.confirmedEmail) {
+            throw new HttpException('Invalid email confirmation token', HttpStatus.BAD_REQUEST);
+        }
+
+        const update = await this.userModel.updateOne(
+            { _id: user.id },
+            { confirmedEmail: true, confirmationToken: null },
+        );
+
+        if (!update.modifiedCount) {
+            throw new HttpException('Failed email confirmation', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
