@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { UAParser } from 'ua-parser-js';
 
-export const BrowserFingerprint = createParamDecorator((_, ctx: ExecutionContext) => {
+export const Fingerprint = createParamDecorator((_, ctx: ExecutionContext) => {
     const { headers } = ctx.switchToHttp().getRequest<Request>();
     const ua = headers['user-agent'];
 
