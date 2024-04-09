@@ -13,7 +13,7 @@ export class AuthController {
     @HttpCode(200)
     async signin(
         @Body(new ClearBodyPipe(), new ValidationPipe()) userDto: SigninUserDto,
-        @Fingerprint() fingerprint: null | string,
+        @Fingerprint() fingerprint: string | null,
     ) {
         return await this.authService.signin(userDto, fingerprint);
     }
@@ -21,7 +21,7 @@ export class AuthController {
     @Post('signup')
     async signup(
         @Body(new ClearBodyPipe(), new ValidationPipe()) userDto: CreateUserDto,
-        @Fingerprint() fingerprint: null | string,
+        @Fingerprint() fingerprint: string | null,
     ) {
         return await this.authService.signup(userDto, fingerprint);
     }
