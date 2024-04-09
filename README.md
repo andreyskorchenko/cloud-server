@@ -4,6 +4,22 @@
 $ npm install
 ```
 
+## Required make a file .env
+
+```
+DB_URL=url
+DB_NAME=name
+DB_USERNAME=user
+DB_PASSWORD=password
+
+JWT_ACCESS_SECRET=secret
+JWT_ACCESS_EXPIRESIN=expiresin
+JWT_REFRESH_SECRET=secret
+JWT_REFRESH_EXPIRESIN=expiresin
+
+MAX_SIGNIN_DEVICES=quantity
+```
+
 ## Running the app
 
 ```bash
