@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { genSalt, hash, compare } from 'bcrypt';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { UsersService } from '@/users/users.service';
-import { CreateUserDto } from '@/users/dto/CreateUserDto';
-import { SigninUserDto } from '@/auth/dto/SigninUserDto';
+import { CreateUserDto } from '@/users/dto';
+import { SigninUserDto } from '@/auth/dto';
 import { JwtPayload } from '@/auth/interfaces';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class AuthService {
         private configService: ConfigService,
     ) {}
 
-    async signin({ login, password }: SigninUserDto) {
+    async signin({ login, password }: SigninUserDto, fingerprint: string | null) {
         const candidate = await this.usersService.findOneByNicknameOrEmail({
             nickname: login,
             email: login,
@@ -41,21 +41,22 @@ export class AuthService {
             expiresIn: this.configService.get('JWT_EXPIRESIN_REFRESH'),
         });
 
+        await this.usersService.addDevice(candidate, refreshToken, fingerprint);
         return { accessToken, refreshToken };
     }
 
-    async signup(userDto: CreateUserDto) {
-        const isUserExists = await this.usersService.findOneByNicknameOrEmail({
+    async signup(userDto: CreateUserDto, fingerprint: string | null) {
+        const user = await this.usersService.findOneByNicknameOrEmail({
             nickname: userDto.nickname,
             email: userDto.email,
         });
 
-        if (isUserExists) {
+        if (user) {
             throw new HttpException('User exists with same username or email', HttpStatus.BAD_REQUEST);
         }
 
         const salt = await genSalt(10);
         const password = await hash(userDto.password, salt);
-        return await this.usersService.create({ ...userDto, password });
+        return await this.usersService.create({ ...userDto, password }, fingerprint);
     }
 }
