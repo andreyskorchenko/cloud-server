@@ -94,7 +94,7 @@ export class UsersService {
         const user = await this.userModel.findOne({ confirmationToken });
 
         if (!user || user.confirmedEmail) {
-            throw new HttpException('Invalid email confirmation token', HttpStatus.BAD_REQUEST);
+            throw new HttpException('Failed email confirmation', HttpStatus.BAD_REQUEST);
         }
 
         const update = await this.userModel.updateOne(
