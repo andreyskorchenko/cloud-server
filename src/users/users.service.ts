@@ -43,7 +43,7 @@ export class UsersService {
         return this.userModel.findOne().or([{ nickname }, { email }]).exec();
     }
 
-    addDevice(user: UserDocument, token: string, fingerprint: null | string) {
+    addDevice(user: UserDocument, token: string, fingerprint: string | null) {
         const devices = user.devices
             .reduce(
                 ([nullabels, fingerprints], device) => {
