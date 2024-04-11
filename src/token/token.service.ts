@@ -5,25 +5,23 @@ import { JwtPayload } from '@/auth/interfaces';
 
 @Injectable()
 export class TokenService {
-    private readonly accessSecret?: string;
+    private readonly secret?: string;
     private readonly accessExpiresin?: string;
-    private readonly refreshSecret?: string;
     private readonly refreshExpiresin?: string;
 
     constructor(
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
     ) {
-        this.accessSecret = this.configService.get('JWT_ACCESS_SECRET');
+        this.secret = this.configService.get('JWT_SECRET');
         this.accessExpiresin = this.configService.get('JWT_ACCESS_EXPIRESIN');
-        this.refreshSecret = this.configService.get('JWT_REFRESH_SECRET');
         this.refreshExpiresin = this.configService.get('JWT_REFRESH_EXPIRESIN');
     }
 
     async generateAccess(payload: JwtPayload) {
         try {
             return await this.jwtService.signAsync(payload, {
-                secret: this.accessSecret,
+                secret: this.secret,
                 expiresIn: this.accessExpiresin,
             });
         } catch (err) {
@@ -34,7 +32,7 @@ export class TokenService {
     async generateRefresh(payload: JwtPayload) {
         try {
             return await this.jwtService.signAsync(payload, {
-                secret: this.refreshSecret,
+                secret: this.secret,
                 expiresIn: this.refreshExpiresin,
             });
         } catch (err) {
@@ -45,7 +43,7 @@ export class TokenService {
     async verifyAccess(token: string) {
         try {
             return await this.jwtService.verifyAsync<JwtPayload>(token, {
-                secret: this.accessSecret,
+                secret: this.secret,
             });
         } catch (err) {
             return null;
@@ -55,7 +53,7 @@ export class TokenService {
     async verifyRefresh(token: string) {
         try {
             return await this.jwtService.verifyAsync<JwtPayload>(token, {
-                secret: this.refreshSecret,
+                secret: this.secret,
             });
         } catch (err) {
             return null;
