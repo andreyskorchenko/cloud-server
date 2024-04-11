@@ -1,47 +1,47 @@
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { genSalt, hash, compare } from 'bcrypt';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { UsersService } from '@/users/users.service';
 import { CreateUserDto } from '@/users/dto';
 import { SigninUserDto } from '@/auth/dto';
 import { JwtPayload } from '@/auth/interfaces';
+import { TokenService } from '@/token/token.service';
 
 @Injectable()
 export class AuthService {
     constructor(
-        private jwtService: JwtService,
-        private usersService: UsersService,
-        private configService: ConfigService,
+        private readonly usersService: UsersService,
+        private readonly tokenService: TokenService,
     ) {}
 
     async signin({ login, password }: SigninUserDto, fingerprint: string | null) {
-        const candidate = await this.usersService.findOneByNicknameOrEmail({
+        const user = await this.usersService.findOneByNicknameOrEmail({
             nickname: login,
             email: login,
         });
 
-        if (!candidate) {
+        if (!user) {
             throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
         }
 
-        const isComparePasswords = await compare(password, candidate.password);
+        const isComparePasswords = await compare(password, user.password);
         if (!isComparePasswords) {
             throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
         }
 
         const jwtPayload: JwtPayload = {
-            uid: candidate._id.toString(),
-            nickname: candidate.nickname,
-            roles: candidate.roles,
+            uid: user._id.toString(),
+            nickname: user.nickname,
+            roles: user.roles,
         };
 
-        const accessToken = await this.jwtService.signAsync(jwtPayload);
-        const refreshToken = await this.jwtService.signAsync(jwtPayload, {
-            expiresIn: this.configService.get('JWT_EXPIRESIN_REFRESH'),
-        });
+        const accessToken = await this.tokenService.generateAccess(jwtPayload);
+        const refreshToken = await this.tokenService.generateRefresh(jwtPayload);
 
-        await this.usersService.addDevice(candidate, refreshToken, fingerprint);
+        if (!accessToken || !refreshToken) {
+            throw new HttpException('', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        await this.usersService.addDevice(user, refreshToken, fingerprint);
         return { accessToken, refreshToken };
     }
 
