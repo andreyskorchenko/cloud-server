@@ -27,7 +27,7 @@ export class UsersService {
         });
 
         if (!token) {
-            throw new HttpException('Failed sign up', HttpStatus.SERVICE_UNAVAILABLE);
+            throw new HttpException('Failed sign up', HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         model.devices.push({
