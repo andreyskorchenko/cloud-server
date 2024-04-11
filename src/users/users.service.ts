@@ -1,35 +1,34 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { Model } from 'mongoose';
-import { JwtService } from '@nestjs/jwt';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
 import { UserDocument } from '@/users/schemas';
 import { UserDevice } from '@/users/interfaces';
-import { JwtPayload } from '@/auth/interfaces';
 import { CreateUserDto } from '@/users/dto';
+import { TokenService } from '@/token/token.service';
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectModel('users') private userModel: Model<UserDocument>,
-        private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
+        private readonly tokenService: TokenService,
     ) {}
 
-    async create(createUserDto: CreateUserDto, fingerprint: null | string) {
+    async create(createUserDto: CreateUserDto, fingerprint: string | null) {
         const model = new this.userModel(createUserDto);
         model.confirmationToken = createHash('sha256').update(randomUUID()).digest('hex');
 
-        const jwtPayload: JwtPayload = {
+        const token = await this.tokenService.generateRefresh({
             uid: model._id.toString(),
             nickname: model.nickname,
             roles: model.roles,
-        };
-
-        const token = await this.jwtService.signAsync(jwtPayload, {
-            expiresIn: this.configService.get('JWT_EXPIRESIN_REFRESH'),
         });
+
+        if (!token) {
+            throw new HttpException('Failed sign up', HttpStatus.SERVICE_UNAVAILABLE);
+        }
 
         model.devices.push({
             token,
