@@ -1,17 +1,18 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { Model } from 'mongoose';
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
 import { UserDocument } from '@/users/schemas';
 import { UserDevice } from '@/users/interfaces';
 import { CreateUserDto } from '@/users/dto';
 import { TokenService } from '@/token/token.service';
+import { JwtPayload } from '@/auth/interfaces';
 
 @Injectable()
 export class UsersService {
     constructor(
-        @InjectModel('users') private userModel: Model<UserDocument>,
+        @InjectModel('users') private readonly userModel: Model<UserDocument>,
         private readonly configService: ConfigService,
         private readonly tokenService: TokenService,
     ) {}
@@ -20,23 +21,33 @@ export class UsersService {
         const model = new this.userModel(createUserDto);
         model.confirmationToken = createHash('sha256').update(randomUUID()).digest('hex');
 
-        const token = await this.tokenService.generateRefresh({
+        const jwtPayload: JwtPayload = {
             uid: model._id.toString(),
             nickname: model.nickname,
             roles: model.roles,
-        });
+        };
 
-        if (!token) {
-            throw new HttpException('Failed sign up', HttpStatus.INTERNAL_SERVER_ERROR);
+        const accessToken = await this.tokenService.generateAccess(jwtPayload);
+        const refreshToken = await this.tokenService.generateRefresh(jwtPayload);
+
+        if (!accessToken || !refreshToken) {
+            throw new InternalServerErrorException();
         }
 
         model.devices.push({
-            token,
             fingerprint,
+            token: refreshToken,
             lastUpdate: new Date(),
         });
 
-        return model.save();
+        await model.save();
+
+        return {
+            accessToken,
+            refreshToken,
+            nickname: model.nickname,
+            roles: model.roles,
+        };
     }
 
     findOneByNicknameOrEmail({ nickname, email }: Record<keyof Pick<CreateUserDto, 'nickname' | 'email'>, string>) {
@@ -94,7 +105,7 @@ export class UsersService {
         const user = await this.userModel.findOne({ confirmationToken });
 
         if (!user || user.confirmedEmail) {
-            throw new HttpException('Failed email confirmation', HttpStatus.BAD_REQUEST);
+            throw new BadRequestException();
         }
 
         const update = await this.userModel.updateOne(
@@ -103,7 +114,7 @@ export class UsersService {
         );
 
         if (!update.modifiedCount) {
-            throw new HttpException('Failed email confirmation', HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new InternalServerErrorException();
         }
     }
 }
