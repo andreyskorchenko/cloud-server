@@ -1,5 +1,5 @@
 export interface UserDevice {
-    fingerprint: null | string;
+    fingerprint: string | null;
     token: string;
     lastUpdate: Date;
 }
