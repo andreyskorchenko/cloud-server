@@ -1,4 +1,5 @@
-import { Controller, Post, HttpCode, Body, ValidationPipe } from '@nestjs/common';
+import { Controller, Post, HttpCode, Body, ValidationPipe, UseInterceptors } from '@nestjs/common';
+import { ExcludeResponseInterceptor, SetCookieInterceptor } from '@/interceptors';
 import { Fingerprint } from '@/auth/decorators';
 import { AuthService } from '@/auth/auth.service';
 import { CreateUserDto } from '@/users/dto';
@@ -11,6 +12,13 @@ export class AuthController {
 
     @Post('signin')
     @HttpCode(200)
+    @UseInterceptors(
+        new ExcludeResponseInterceptor(['refreshToken']),
+        new SetCookieInterceptor('refreshToken', {
+            httpOnly: true,
+            maxAge: 2592000000,
+        }),
+    )
     async signin(
         @Body(new ClearBodyPipe(), new ValidationPipe()) userDto: SigninUserDto,
         @Fingerprint() fingerprint: string | null,
@@ -19,6 +27,13 @@ export class AuthController {
     }
 
     @Post('signup')
+    @UseInterceptors(
+        new ExcludeResponseInterceptor(['refreshToken']),
+        new SetCookieInterceptor('refreshToken', {
+            httpOnly: true,
+            maxAge: 2592000000,
+        }),
+    )
     async signup(
         @Body(new ClearBodyPipe(), new ValidationPipe()) userDto: CreateUserDto,
         @Fingerprint() fingerprint: string | null,
