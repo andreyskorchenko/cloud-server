@@ -1,6 +1,6 @@
-import { Controller, Post, HttpCode, Body, ValidationPipe, UseInterceptors } from '@nestjs/common';
+import { Controller, Post, Get, HttpCode, Body, ValidationPipe, UseInterceptors } from '@nestjs/common';
 import { ExcludeResponseInterceptor, SetCookieInterceptor } from '@/interceptors';
-import { Fingerprint } from '@/auth/decorators';
+import { Fingerprint, Cookie } from '@/auth/decorators';
 import { AuthService } from '@/auth/auth.service';
 import { CreateUserDto } from '@/users/dto';
 import { SigninUserDto } from '@/auth/dto';
@@ -39,5 +39,10 @@ export class AuthController {
         @Fingerprint() fingerprint: string | null,
     ) {
         return await this.authService.signup(userDto, fingerprint);
+    }
+
+    @Get('refresh')
+    async refresh(@Cookie('refreshToken') token: string | undefined, @Fingerprint() fingerprint: string | null) {
+        return await this.authService.refresh(token, fingerprint);
     }
 }
