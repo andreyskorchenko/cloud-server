@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { Model } from 'mongoose';
-import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
 import { UserDocument } from '@/users/schemas';
@@ -8,6 +8,8 @@ import { UserDevice } from '@/users/interfaces';
 import { CreateUserDto } from '@/users/dto';
 import { TokenService } from '@/token/token.service';
 import { JwtPayload } from '@/auth/interfaces';
+
+type FindFilter = Partial<Record<keyof Omit<CreateUserDto, 'password'>, string>>;
 
 @Injectable()
 export class UsersService {
@@ -17,12 +19,38 @@ export class UsersService {
         private readonly tokenService: TokenService,
     ) {}
 
+    find(filter: FindFilter) {
+        const conditions = Object.entries(filter).reduce((acc, [key, value]) => {
+            return [...acc, { [key]: value }];
+        }, []);
+
+        const one = () => {
+            if (!conditions.length) {
+                return null;
+            }
+
+            return this.userModel.findOne().or(conditions).exec();
+        };
+
+        const many = () => {
+            if (!conditions.length) {
+                return this.userModel.find();
+            }
+
+            return this.userModel.find().or(conditions).exec();
+        };
+
+        return {
+            one,
+            many,
+        };
+    }
+
     async create(createUserDto: CreateUserDto, fingerprint: string | null) {
         const model = new this.userModel(createUserDto);
-        model.confirmationToken = createHash('sha256').update(randomUUID()).digest('hex');
 
         const jwtPayload: JwtPayload = {
-            uid: model._id.toString(),
+            id: model._id.toString(),
             nickname: model.nickname,
             roles: model.roles,
         };
@@ -31,9 +59,10 @@ export class UsersService {
         const refreshToken = await this.tokenService.generateRefresh(jwtPayload);
 
         if (!accessToken || !refreshToken) {
-            throw new InternalServerErrorException();
+            throw new HttpException('', HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+        model.confirmationToken = createHash('sha256').update(randomUUID()).digest('hex');
         model.devices.push({
             fingerprint,
             token: refreshToken,
@@ -48,10 +77,6 @@ export class UsersService {
             nickname: model.nickname,
             roles: model.roles,
         };
-    }
-
-    findOneByNicknameOrEmail({ nickname, email }: Record<keyof Pick<CreateUserDto, 'nickname' | 'email'>, string>) {
-        return this.userModel.findOne().or([{ nickname }, { email }]).exec();
     }
 
     addDevice(user: UserDocument, token: string, fingerprint: string | null) {
@@ -105,7 +130,7 @@ export class UsersService {
         const user = await this.userModel.findOne({ confirmationToken });
 
         if (!user || user.confirmedEmail) {
-            throw new BadRequestException();
+            throw new HttpException('', HttpStatus.BAD_REQUEST);
         }
 
         const update = await this.userModel.updateOne(
@@ -114,7 +139,7 @@ export class UsersService {
         );
 
         if (!update.modifiedCount) {
-            throw new InternalServerErrorException();
+            throw new HttpException('', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
