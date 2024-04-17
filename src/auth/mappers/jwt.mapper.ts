@@ -1,7 +1,7 @@
 import { JwtPayload } from '@/auth/interfaces';
 
 export class JwtMapper {
-    static toUI({ uid, nickname, roles }: JwtPayload): JwtPayload {
-        return { uid, nickname, roles };
+    static toUI({ id, nickname, roles }: JwtPayload): JwtPayload {
+        return { id: id, nickname, roles };
     }
 }
