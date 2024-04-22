@@ -14,10 +14,7 @@ export class AuthService {
     ) {}
 
     async signin({ login, password }: SigninUserDto, fingerprint: string | null) {
-        const user = await this.usersService.findOneByNicknameOrEmail({
-            nickname: login,
-            email: login,
-        });
+        const user = await this.usersService.find({ nickname: login, email: login }).one();
 
         if (!user) {
             throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
@@ -29,7 +26,7 @@ export class AuthService {
         }
 
         const jwtPayload: JwtPayload = {
-            uid: user._id.toString(),
+            id: user._id.toString(),
             nickname: user.nickname,
             roles: user.roles,
         };
@@ -42,14 +39,17 @@ export class AuthService {
         }
 
         await this.usersService.addDevice(user, refreshToken, fingerprint);
-        return { accessToken, refreshToken };
+
+        return {
+            accessToken,
+            refreshToken,
+            nickname: user.nickname,
+            roles: user.roles,
+        };
     }
 
     async signup(userDto: CreateUserDto, fingerprint: string | null) {
-        const user = await this.usersService.findOneByNicknameOrEmail({
-            nickname: userDto.nickname,
-            email: userDto.email,
-        });
+        const user = await this.usersService.find({ nickname: userDto.nickname, email: userDto.email }).one();
 
         if (user) {
             throw new HttpException('User exists with same username or email', HttpStatus.BAD_REQUEST);
@@ -58,5 +58,31 @@ export class AuthService {
         const salt = await genSalt(10);
         const password = await hash(userDto.password, salt);
         return await this.usersService.create({ ...userDto, password }, fingerprint);
+    }
+
+    async refresh(token: string | undefined, fingerprint: string | null) {
+        if (!token?.length) {
+            throw new HttpException('', HttpStatus.BAD_REQUEST);
+        }
+
+        const payload = await this.tokenService.verifyRefresh(token);
+        console.log(fingerprint);
+        console.log(payload);
+        // if (!payload) {
+        //     throw new HttpException('', HttpStatus.BAD_REQUEST);
+        // }
+        //
+        // const user = await this.usersService.find({ nickname: payload.id }).one();
+        // if (!user) {
+        //     throw new HttpException('', HttpStatus.BAD_REQUEST);
+        // }
+        //
+        // const device = user.devices.find((device) => device.token === token);
+        // if (device?.fingerprint !== fingerprint) {
+        //     throw new HttpException('', HttpStatus.BAD_REQUEST);
+        // }
+
+        // const accessToken = await this.tokenService.generateAccess();
+        // const refreshToken = await this.tokenService.generateRefresh();
     }
 }
