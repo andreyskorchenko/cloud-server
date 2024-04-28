@@ -6,6 +6,7 @@ import { UserSchema } from '@/users/schemas';
 import { JwtOptions } from 'src/auth/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TokenService } from '@/token/token.service';
+import { StorageModule } from '@/storage/storage.module';
 
 @Module({
     imports: [
@@ -16,6 +17,7 @@ import { TokenService } from '@/token/token.service';
                 schema: UserSchema,
             },
         ]),
+        StorageModule,
     ],
     controllers: [UsersController],
     providers: [UsersService, TokenService],
