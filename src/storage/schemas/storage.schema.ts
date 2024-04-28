@@ -8,7 +8,7 @@ class Storage {
     storage: DirectoryStorage[];
 
     @Prop({ required: true, unique: true, ref: 'users' })
-    userId: mongoose.Schema.Types.ObjectId;
+    owner: mongoose.Schema.Types.ObjectId;
 }
 
 export type StorageDocument = HydratedDocument<Storage>;
