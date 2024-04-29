@@ -1,11 +1,11 @@
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { DirectoryStorage } from '@/storage/types';
+import { RootStorage } from '@/storage/types';
 
 @Schema()
 class Storage {
     @Prop({ required: true })
-    storage: DirectoryStorage[];
+    storage: RootStorage;
 
     @Prop({ required: true, unique: true, ref: 'user' })
     owner: mongoose.Schema.Types.ObjectId;
