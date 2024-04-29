@@ -8,7 +8,7 @@ import { StorageService } from '@/storage/storage.service';
     imports: [
         MongooseModule.forFeature([
             {
-                name: 'storages',
+                name: 'storage',
                 schema: StorageSchema,
             },
         ]),
