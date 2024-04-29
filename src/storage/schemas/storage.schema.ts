@@ -7,7 +7,7 @@ class Storage {
     @Prop({ required: true })
     storage: DirectoryStorage[];
 
-    @Prop({ required: true, unique: true, ref: 'users' })
+    @Prop({ required: true, unique: true, ref: 'user' })
     owner: mongoose.Schema.Types.ObjectId;
 }
 
