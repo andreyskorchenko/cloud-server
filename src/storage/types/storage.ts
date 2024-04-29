@@ -1,9 +1,11 @@
-export type FileStorage = {
+type File = {
     name: string;
     size: number;
 };
 
-export type DirectoryStorage = {
+type Directory = {
     name: string;
-    children: (FileStorage | DirectoryStorage)[];
+    children: (File | Directory)[];
 };
+
+export type RootStorage = (File | Directory)[];
