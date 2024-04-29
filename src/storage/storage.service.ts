@@ -1,18 +1,18 @@
-import { Model } from 'mongoose';
+import { Model, Schema } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { StorageDocument } from 'src/storage/schemas';
+import { StorageDocument } from '@/storage/schemas';
 
 @Injectable()
 export class StorageService {
-    constructor(@InjectModel('storages') private readonly storageModel: Model<StorageDocument>) {}
+    constructor(@InjectModel('storage') private readonly storageModel: Model<StorageDocument>) {}
 
-    async create(userId: string) {
+    async create(id: Schema.Types.ObjectId) {
         const model = new this.storageModel({
-            userId,
             storage: [],
+            owner: id,
         });
 
-        console.log(model);
+        return await model.save();
     }
 }
