@@ -1,4 +1,4 @@
-import { HydratedDocument } from 'mongoose';
+import mongoose from 'mongoose';
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Roles } from '@/auth/constants';
 import { UserDevice } from '@/users/interfaces';
@@ -29,6 +29,9 @@ export class User {
     @Prop({ required: true })
     devices: UserDevice[];
 
+    @Prop({ required: true, unique: true, ref: 'storage' })
+    storage: mongoose.Schema.Types.ObjectId;
+
     @Prop({ required: true })
     password: string;
 
@@ -36,5 +39,5 @@ export class User {
     createdAt: Date;
 }
 
-export type UserDocument = HydratedDocument<User>;
+export type UserDocument = mongoose.HydratedDocument<User>;
 export const UserSchema = SchemaFactory.createForClass(User);
