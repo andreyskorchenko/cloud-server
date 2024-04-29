@@ -8,15 +8,17 @@ import { UserDevice } from '@/users/interfaces';
 import { CreateUserDto } from '@/users/dto';
 import { TokenService } from '@/token/token.service';
 import { JwtPayload } from '@/auth/interfaces';
+import { StorageService } from '@/storage/storage.service';
 
 type FindFilter = Partial<Record<keyof Omit<CreateUserDto, 'password'>, string>>;
 
 @Injectable()
 export class UsersService {
     constructor(
-        @InjectModel('users') private readonly userModel: Model<UserDocument>,
+        @InjectModel('user') private readonly userModel: Model<UserDocument>,
         private readonly configService: ConfigService,
         private readonly tokenService: TokenService,
+        private readonly storageService: StorageService,
     ) {}
 
     find(filter: FindFilter) {
@@ -47,12 +49,14 @@ export class UsersService {
     }
 
     async create(createUserDto: CreateUserDto, fingerprint: string | null) {
-        const model = new this.userModel(createUserDto);
+        const userModel = new this.userModel(createUserDto);
+        const storageModel = await this.storageService.create(userModel.id);
+        userModel.storage = storageModel.id;
 
         const jwtPayload: JwtPayload = {
-            id: model._id.toString(),
-            nickname: model.nickname,
-            roles: model.roles,
+            id: userModel.id,
+            nickname: userModel.nickname,
+            roles: userModel.roles,
         };
 
         const accessToken = await this.tokenService.generateAccess(jwtPayload);
@@ -62,20 +66,20 @@ export class UsersService {
             throw new HttpException('', HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        model.confirmationToken = createHash('sha256').update(randomUUID()).digest('hex');
-        model.devices.push({
+        userModel.confirmationToken = createHash('sha256').update(randomUUID()).digest('hex');
+        userModel.devices.push({
             fingerprint,
             token: refreshToken,
             lastUpdate: new Date(),
         });
 
-        await model.save();
+        await userModel.save();
 
         return {
             accessToken,
             refreshToken,
-            nickname: model.nickname,
-            roles: model.roles,
+            nickname: userModel.nickname,
+            roles: userModel.roles,
         };
     }
 
