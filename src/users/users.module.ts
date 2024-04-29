@@ -13,7 +13,7 @@ import { StorageModule } from '@/storage/storage.module';
         JwtModule.registerAsync(JwtOptions),
         MongooseModule.forFeature([
             {
-                name: 'users',
+                name: 'user',
                 schema: UserSchema,
             },
         ]),
