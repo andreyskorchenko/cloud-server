@@ -1,4 +1,3 @@
-import { createHash, randomUUID } from 'node:crypto';
 import { Model } from 'mongoose';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -66,7 +65,6 @@ export class UsersService {
             throw new HttpException('', HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        userModel.confirmationToken = createHash('sha256').update(randomUUID()).digest('hex');
         userModel.devices.push({
             fingerprint,
             token: refreshToken,
@@ -130,20 +128,25 @@ export class UsersService {
         return this.userModel.updateOne({ _id: user.id }, { devices });
     }
 
-    async emailConfirmation(confirmationToken: string) {
-        const user = await this.userModel.findOne({ confirmationToken });
+    async emailConfirmation(token: string) {
+        const user = await this.userModel.findOne({ 'emailConfirmation.token': token });
 
-        if (!user || user.confirmedEmail) {
-            throw new HttpException('', HttpStatus.BAD_REQUEST);
+        if (!user || user.emailConfirmation.isConfirmed) {
+            throw new HttpException('Email already confirmed or invalid token', HttpStatus.BAD_REQUEST);
         }
 
         const update = await this.userModel.updateOne(
             { _id: user.id },
-            { confirmedEmail: true, confirmationToken: null },
+            {
+                emailConfirmation: {
+                    token: null,
+                    isConfirmed: true,
+                },
+            },
         );
 
         if (!update.modifiedCount) {
-            throw new HttpException('', HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new HttpException('Failed verify email', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
