@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Roles } from '@/auth/constants';
 import { UserDevice } from '@/users/interfaces';
+import { defaultOTP } from '@/users/constants';
+import { OTP } from '@/types';
 
 @Schema()
 export class User {
@@ -17,13 +19,13 @@ export class User {
     @Prop({ required: true, trim: true, lowercase: true, unique: true })
     email: string;
 
-    @Prop({ required: true, default: false })
+    @Prop({ required: false, default: false })
     confirmedEmail: boolean;
 
     @Prop({ required: true })
     confirmationToken: string;
 
-    @Prop({ required: true, default: () => [Roles.ADMIN] })
+    @Prop({ required: false, default: () => [Roles.ADMIN] })
     roles: Roles[];
 
     @Prop({ required: true })
@@ -32,10 +34,13 @@ export class User {
     @Prop({ required: true, unique: true, ref: 'storage' })
     storage: mongoose.Schema.Types.ObjectId;
 
+    @Prop({ required: false, type: mongoose.Schema.Types.Mixed, default: () => defaultOTP })
+    otp: OTP;
+
     @Prop({ required: true })
     password: string;
 
-    @Prop({ required: true, default: () => new Date() })
+    @Prop({ required: false, default: () => new Date() })
     createdAt: Date;
 }
 
