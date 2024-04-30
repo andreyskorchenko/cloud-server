@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Roles } from '@/auth/constants';
-import { UserDevice } from '@/users/interfaces';
+import { EmailConfirmation, UserDevice } from '@/users/interfaces';
+import { generateEmailConfirmation } from '@/users/helpers';
 import { defaultOTP } from '@/users/constants';
 import { OTP } from '@/types';
 
@@ -19,11 +20,8 @@ export class User {
     @Prop({ required: true, trim: true, lowercase: true, unique: true })
     email: string;
 
-    @Prop({ required: false, default: false })
-    confirmedEmail: boolean;
-
-    @Prop({ required: true })
-    confirmationToken: string;
+    @Prop({ required: false, type: mongoose.Schema.Types.Mixed, default: generateEmailConfirmation })
+    emailConfirmation: EmailConfirmation;
 
     @Prop({ required: false, default: () => [Roles.ADMIN] })
     roles: Roles[];
