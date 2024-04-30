@@ -19,25 +19,17 @@ export class TokenService {
     }
 
     async generateAccess(payload: JwtPayload) {
-        try {
-            return await this.jwtService.signAsync(payload, {
-                secret: this.secret,
-                expiresIn: this.accessExpiresin,
-            });
-        } catch (err) {
-            return null;
-        }
+        return await this.jwtService.signAsync(payload, {
+            secret: this.secret,
+            expiresIn: this.accessExpiresin,
+        });
     }
 
     async generateRefresh(payload: JwtPayload) {
-        try {
-            return await this.jwtService.signAsync(payload, {
-                secret: this.secret,
-                expiresIn: this.refreshExpiresin,
-            });
-        } catch (err) {
-            return null;
-        }
+        return await this.jwtService.signAsync(payload, {
+            secret: this.secret,
+            expiresIn: this.refreshExpiresin,
+        });
     }
 
     async verifyAccess(token: string) {
