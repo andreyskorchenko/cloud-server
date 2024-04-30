@@ -50,7 +50,6 @@ export class UsersService {
     async create(createUserDto: CreateUserDto, fingerprint: string | null) {
         const userModel = new this.userModel(createUserDto);
         const storageModel = await this.storageService.create(userModel.id);
-        userModel.storage = storageModel.id;
 
         const jwtPayload: JwtPayload = {
             id: userModel.id,
@@ -61,10 +60,7 @@ export class UsersService {
         const accessToken = await this.tokenService.generateAccess(jwtPayload);
         const refreshToken = await this.tokenService.generateRefresh(jwtPayload);
 
-        if (!accessToken || !refreshToken) {
-            throw new HttpException('', HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
+        userModel.storage = storageModel.id;
         userModel.devices.push({
             fingerprint,
             token: refreshToken,
