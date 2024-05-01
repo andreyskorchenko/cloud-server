@@ -1,11 +1,9 @@
-import { createHash, randomUUID } from 'node:crypto';
 import { EmailConfirmation } from '@/users/interfaces';
+import { randomHash } from '@/helpers';
 
 export const generateEmailConfirmation = (): EmailConfirmation => {
-    const token = createHash('sha256').update(randomUUID()).digest('hex');
-
     return {
-        token,
+        token: randomHash('sha256'),
         isConfirmed: false,
     };
 };
