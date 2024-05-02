@@ -1,8 +1,8 @@
 import { randomInt } from 'node:crypto';
-import { TypesOTP, OTP } from '@/types';
+import { TypesOtp, Otp } from '@/types';
 import { randomHash } from '@/helpers';
 
-export const generateOtp = (): OTP => {
+export const generateOtp = (): Otp => {
     const id = randomHash('sha256');
     const code = parseInt(
         new Array(6)
@@ -16,7 +16,7 @@ export const generateOtp = (): OTP => {
         code,
         expires: 300,
         attempts: 3,
-        type: TypesOTP.EMAIL,
+        type: TypesOtp.EMAIL,
         createdAt: new Date(),
     };
 };
