@@ -3,8 +3,7 @@ import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Roles } from '@/auth/constants';
 import { EmailConfirmation, UserDevice } from '@/users/interfaces';
 import { generateEmailConfirmation } from '@/users/helpers';
-import { defaultOTP } from '@/users/constants';
-import { OTP } from '@/types';
+import { Otp } from '@/types';
 
 @Schema()
 export class User {
@@ -32,8 +31,8 @@ export class User {
     @Prop({ required: true, unique: true, ref: 'storage' })
     storage: mongoose.Schema.Types.ObjectId;
 
-    @Prop({ required: false, type: mongoose.Schema.Types.Mixed, default: () => defaultOTP })
-    otp: OTP;
+    @Prop({ required: false, type: mongoose.Schema.Types.Mixed, default: null })
+    otp: Otp | null;
 
     @Prop({ required: true })
     password: string;
