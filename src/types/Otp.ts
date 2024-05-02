@@ -4,10 +4,10 @@ export enum TypesOtp {
 }
 
 export interface Otp {
-    id: string | null;
-    code: number | null;
-    expires: number | null;
-    attempts: number | null;
-    type: keyof typeof TypesOtp | null;
-    createdAt: Date | null;
+    id: string;
+    code: number;
+    expires: number;
+    attempts: number;
+    type: keyof typeof TypesOtp;
+    createdAt: Date;
 }
