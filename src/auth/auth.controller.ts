@@ -1,9 +1,9 @@
-import { Controller, Post, Get, HttpCode, Body, ValidationPipe, UseInterceptors } from '@nestjs/common';
+import { Controller, Post, Get, HttpCode, Body, UseInterceptors, ValidationPipe } from '@nestjs/common';
 import { ExcludeResponseInterceptor, SetCookieInterceptor } from '@/interceptors';
 import { Fingerprint, Cookie } from '@/auth/decorators';
 import { AuthService } from '@/auth/auth.service';
 import { CreateUserDto } from '@/users/dto';
-import { SigninUserDto } from '@/auth/dto';
+import { SigninUserDto, OtpDto } from '@/auth/dto';
 import { ClearBodyPipe } from '@/pipes';
 
 @Controller('auth')
@@ -12,6 +12,13 @@ export class AuthController {
 
     @Post('signin')
     @HttpCode(200)
+    @UseInterceptors(new ExcludeResponseInterceptor(['code', 'createdAt']))
+    async signin(@Body(new ClearBodyPipe(), new ValidationPipe()) user: SigninUserDto) {
+        return await this.authService.signin(user);
+    }
+
+    @Post('otp')
+    @HttpCode(202)
     @UseInterceptors(
         new ExcludeResponseInterceptor(['refreshToken']),
         new SetCookieInterceptor('refreshToken', {
@@ -19,11 +26,8 @@ export class AuthController {
             maxAge: 2592000000,
         }),
     )
-    async signin(
-        @Body(new ClearBodyPipe(), new ValidationPipe()) userDto: SigninUserDto,
-        @Fingerprint() fingerprint: string | null,
-    ) {
-        return await this.authService.signin(userDto, fingerprint);
+    async otp(@Body(new ValidationPipe()) otp: OtpDto, @Fingerprint() fingerprint: string | null) {
+        return await this.authService.otpConfirmation(otp, fingerprint);
     }
 
     @Post('signup')
@@ -35,10 +39,10 @@ export class AuthController {
         }),
     )
     async signup(
-        @Body(new ClearBodyPipe(), new ValidationPipe()) userDto: CreateUserDto,
+        @Body(new ClearBodyPipe(), new ValidationPipe()) user: CreateUserDto,
         @Fingerprint() fingerprint: string | null,
     ) {
-        return await this.authService.signup(userDto, fingerprint);
+        return await this.authService.signup(user, fingerprint);
     }
 
     @Get('refresh')
