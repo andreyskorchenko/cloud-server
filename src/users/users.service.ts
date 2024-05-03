@@ -145,4 +145,8 @@ export class UsersService {
             throw new HttpException('Failed verify email', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    findByIdOtp(id: string) {
+        return this.userModel.findOne({ 'otp.id': id });
+    }
 }
