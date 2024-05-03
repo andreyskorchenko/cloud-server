@@ -5,7 +5,7 @@ export enum TypesOtp {
 
 export interface Otp {
     id: string;
-    code: number;
+    code: string;
     expires: number;
     attempts: number;
     type: keyof typeof TypesOtp;
