@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
 import { UserDocument } from '@/users/schemas';
@@ -8,6 +8,7 @@ import { CreateUserDto } from '@/users/dto';
 import { TokenService } from '@/token/token.service';
 import { JwtPayload } from '@/auth/interfaces';
 import { StorageService } from '@/storage/storage.service';
+import { Otp } from '@/types';
 
 type FindFilter = Partial<Record<keyof Omit<CreateUserDto, 'password'>, string>>;
 
@@ -148,5 +149,15 @@ export class UsersService {
 
     findByIdOtp(id: string) {
         return this.userModel.findOne({ 'otp.id': id });
+    }
+
+    async setOtp(id: string, otp: Otp | null) {
+        const update = await this.userModel.updateOne({ _id: id }, { otp });
+
+        if (!update.modifiedCount) {
+            throw new InternalServerErrorException();
+        }
+
+        return otp;
     }
 }
