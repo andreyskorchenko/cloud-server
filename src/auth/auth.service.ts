@@ -1,8 +1,16 @@
 import { genSalt, hash, compare } from 'bcrypt';
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import {
+    Injectable,
+    HttpException,
+    HttpStatus,
+    GoneException,
+    ForbiddenException,
+    UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from '@/users/users.service';
 import { CreateUserDto } from '@/users/dto';
-import { SigninUserDto } from '@/auth/dto';
+import { OtpDto, SigninUserDto } from '@/auth/dto';
+import { JwtPayload } from '@/auth/interfaces';
 import { TokenService } from '@/token/token.service';
 import { generateOtp } from '@/auth/helpers';
 
@@ -65,5 +73,51 @@ export class AuthService {
 
         // const accessToken = await this.tokenService.generateAccess();
         // const refreshToken = await this.tokenService.generateRefresh();
+    }
+
+    async otpConfirmation({ id, code }: OtpDto, fingerprint: string | null) {
+        const user = await this.usersService.findByIdOtp(id);
+
+        if (!user?.otp) {
+            throw new GoneException(1);
+        }
+
+        const isExpired = new Date(user.otp.createdAt).getTime() + user.otp.expires * 1000 < Date.now();
+        if (isExpired || user.otp.attempts === 0) {
+            throw new ForbiddenException(2);
+        }
+
+        if (user.otp.code === code) {
+            await this.usersService.setOtp(user.id, null);
+
+            const jwtPayload: JwtPayload = {
+                id: user.id,
+                nickname: user.nickname,
+                roles: user.roles,
+            };
+
+            const accessToken = await this.tokenService.generateAccess(jwtPayload);
+            const refreshToken = await this.tokenService.generateRefresh(jwtPayload);
+            await this.usersService.addDevice(user, refreshToken, fingerprint);
+
+            return {
+                accessToken,
+                refreshToken,
+                nickname: user.nickname,
+                roles: user.roles,
+            };
+        } else {
+            const attempts = user.otp.attempts - 1;
+            await this.usersService.setOtp(user.id, {
+                ...user.otp,
+                attempts,
+            });
+
+            if (attempts) {
+                throw new UnauthorizedException(3);
+            }
+
+            throw new GoneException(4);
+        }
     }
 }
