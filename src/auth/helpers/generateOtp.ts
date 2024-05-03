@@ -4,12 +4,10 @@ import { randomHash } from '@/helpers';
 
 export const generateOtp = (): Otp => {
     const id = randomHash('sha256');
-    const code = parseInt(
-        new Array(6)
-            .fill(null)
-            .map(() => randomInt(0, 9))
-            .join(''),
-    );
+    const code = new Array(6)
+        .fill(null)
+        .map(() => randomInt(0, 9))
+        .join('');
 
     return {
         id,
