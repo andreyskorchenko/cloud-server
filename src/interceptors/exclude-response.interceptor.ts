@@ -15,7 +15,7 @@ export class ExcludeResponseInterceptor<Exclude extends string> implements NestI
 
         return handler.pipe(
             map((data) => {
-                return Object.entries(data).reduce((acc, [key, value]) => {
+                return Object.entries(data ?? {}).reduce((acc, [key, value]) => {
                     const isContains = this.exclude.some((k) => k === key);
                     return isContains ? acc : { ...acc, [key]: value };
                 }, {});
