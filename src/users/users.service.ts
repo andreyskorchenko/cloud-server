@@ -5,8 +5,6 @@ import { ConfigService } from '@nestjs/config';
 import { UserDocument } from '@/users/schemas';
 import { UserDevice } from '@/users/interfaces';
 import { CreateUserDto } from '@/users/dto';
-import { TokenService } from '@/token/token.service';
-import { JwtPayload } from '@/auth/interfaces';
 import { StorageService } from '@/storage/storage.service';
 import { Otp } from '@/types';
 
@@ -17,7 +15,6 @@ export class UsersService {
     constructor(
         @InjectModel('user') private readonly userModel: Model<UserDocument>,
         private readonly configService: ConfigService,
-        private readonly tokenService: TokenService,
         private readonly storageService: StorageService,
     ) {}
 
@@ -48,34 +45,12 @@ export class UsersService {
         };
     }
 
-    async create(createUserDto: CreateUserDto, fingerprint: string | null) {
-        const userModel = new this.userModel(createUserDto);
+    async create(user: CreateUserDto) {
+        // TODO: use transaction for creating storage and user
+        const userModel = new this.userModel(user);
         const storageModel = await this.storageService.create(userModel.id);
-
-        const jwtPayload: JwtPayload = {
-            id: userModel.id,
-            nickname: userModel.nickname,
-            roles: userModel.roles,
-        };
-
-        const accessToken = await this.tokenService.generateAccess(jwtPayload);
-        const refreshToken = await this.tokenService.generateRefresh(jwtPayload);
-
         userModel.storage = storageModel.id;
-        userModel.devices.push({
-            fingerprint,
-            token: refreshToken,
-            lastUpdate: new Date(),
-        });
-
-        await userModel.save();
-
-        return {
-            accessToken,
-            refreshToken,
-            nickname: userModel.nickname,
-            roles: userModel.roles,
-        };
+        return userModel.save();
     }
 
     addDevice(user: UserDocument, token: string, fingerprint: string | null) {
