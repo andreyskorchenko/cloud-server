@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport, SendMailOptions } from 'nodemailer';
+import Handlebars from 'handlebars';
+import { readFile } from 'node:fs/promises';
+import * as path from 'node:path';
 
 @Injectable()
 export class MailService {
@@ -30,5 +33,10 @@ export class MailService {
             // TODO: logger
             throw err;
         }
+    }
+
+    async htmlCompiler(template: string) {
+        const hbs = await readFile(path.join(process.cwd(), `src/mail/templates/${template}.hbs`));
+        return Handlebars.compile(hbs.toString());
     }
 }
