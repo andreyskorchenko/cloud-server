@@ -15,10 +15,9 @@ export class SetCookieInterceptor implements NestInterceptor {
     intercept(context: ExecutionContext, next: CallHandler<ResponseType>): Observable<ResponseType> {
         const response = context.switchToHttp().getResponse<Response>();
         const handler = next.handle();
-
         return handler.pipe(
             tap((data) => {
-                const value = data[this.name];
+                const value = data?.[this.name];
                 if (value) {
                     response.cookie(this.name, value, { ...(Boolean(this.options) && this.options) });
                 }
