@@ -19,25 +19,25 @@ export class User {
     @Prop({ required: true, trim: true, lowercase: true, unique: true })
     email: string;
 
-    @Prop({ required: false, type: mongoose.Schema.Types.Mixed, default: generateEmailConfirmation })
+    @Prop({ type: mongoose.Schema.Types.Mixed, default: generateEmailConfirmation })
     emailConfirmation: EmailConfirmation;
 
-    @Prop({ required: false, default: () => [Roles.ADMIN] })
+    @Prop({ default: () => [Roles.ADMIN] })
     roles: Roles[];
 
-    @Prop({ required: true })
+    @Prop({ default: () => [] })
     devices: UserDevice[];
 
     @Prop({ required: true, unique: true, ref: 'storage' })
     storage: mongoose.Schema.Types.ObjectId;
 
-    @Prop({ required: false, type: mongoose.Schema.Types.Mixed, default: null })
+    @Prop({ type: mongoose.Schema.Types.Mixed, default: null })
     otp: Otp | null;
 
     @Prop({ required: true })
     password: string;
 
-    @Prop({ required: false, default: () => new Date() })
+    @Prop({ default: () => new Date() })
     createdAt: Date;
 }
 
