@@ -8,9 +8,10 @@ import { JwtStrategy } from '@/auth/strategies';
 import { JwtOptions } from '@/auth/config';
 import { TokenService } from '@/token/token.service';
 import { MailModule } from '@/mail/mail.module';
+import { TemplatesModule } from '@/templates/templates.module';
 
 @Module({
-    imports: [JwtModule.registerAsync(JwtOptions), UsersModule, PassportModule, MailModule],
+    imports: [JwtModule.registerAsync(JwtOptions), UsersModule, PassportModule, MailModule, TemplatesModule],
     controllers: [AuthController],
     providers: [AuthService, JwtStrategy, TokenService],
 })
