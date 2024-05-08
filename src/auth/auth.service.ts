@@ -13,12 +13,16 @@ import { OtpDto, SigninUserDto } from '@/auth/dto';
 import { JwtPayload } from '@/auth/interfaces';
 import { TokenService } from '@/token/token.service';
 import { generateOtp } from '@/auth/helpers';
+import { MailService } from '@/mail/mail.service';
+import { TemplatesService } from '@/templates/templates.service';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly usersService: UsersService,
         private readonly tokenService: TokenService,
+        private readonly mailService: MailService,
+        private readonly templatesService: TemplatesService,
     ) {}
 
     async signin({ login, password }: SigninUserDto) {
@@ -34,7 +38,15 @@ export class AuthService {
         }
 
         const otp = generateOtp();
-        return await this.usersService.setOtp(user.id, otp);
+        const html = await this.templatesService.compile('otp');
+        await this.mailService.send({
+            to: user.email,
+            subject: 'OTP Confirmation',
+            html: html({ code: otp.code }),
+        });
+
+        await this.usersService.setOtp(user.id, otp);
+        return otp;
     }
 
     async signup(userDto: CreateUserDto, fingerprint: string | null) {
@@ -46,7 +58,32 @@ export class AuthService {
 
         const salt = await genSalt(10);
         const password = await hash(userDto.password, salt);
-        return await this.usersService.create({ ...userDto, password }, fingerprint);
+        const createdUser = await this.usersService.create({ ...userDto, password });
+        const html = await this.templatesService.compile('email');
+        await this.mailService.send({
+            to: createdUser.email,
+            subject: 'EMAIL Confirmation',
+            html: html({
+                url: `http://localhost:3000/users/email-confirmation/${createdUser.emailConfirmation.token}`,
+            }),
+        });
+
+        const jwtPayload: JwtPayload = {
+            id: createdUser.id,
+            nickname: createdUser.nickname,
+            roles: createdUser.roles,
+        };
+
+        const accessToken = await this.tokenService.generateAccess(jwtPayload);
+        const refreshToken = await this.tokenService.generateRefresh(jwtPayload);
+        await this.usersService.addDevice(createdUser, refreshToken, fingerprint);
+
+        return {
+            accessToken,
+            refreshToken,
+            nickname: createdUser.nickname,
+            roles: createdUser.roles,
+        };
     }
 
     async refresh(token: string | undefined, fingerprint: string | null) {
