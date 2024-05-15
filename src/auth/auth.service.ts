@@ -87,27 +87,25 @@ export class AuthService {
     }
 
     async refresh(token: string | undefined, fingerprint: string | null) {
-        if (!token?.length) {
-            throw new HttpException('', HttpStatus.BAD_REQUEST);
+        if (!token || !fingerprint) {
+            throw new UnauthorizedException();
         }
 
         const payload = await this.tokenService.verifyRefresh(token);
-        console.log(fingerprint);
-        console.log(payload);
-        // if (!payload) {
-        //     throw new HttpException('', HttpStatus.BAD_REQUEST);
-        // }
-        //
-        // const user = await this.usersService.find({ nickname: payload.id }).one();
-        // if (!user) {
-        //     throw new HttpException('', HttpStatus.BAD_REQUEST);
-        // }
-        //
+        if (!payload) {
+            throw new UnauthorizedException();
+        }
+
+        const user = await this.usersService.find({ nickname: payload.id }).one();
+        if (!user) {
+            throw new UnauthorizedException();
+        }
+
         // const device = user.devices.find((device) => device.token === token);
         // if (device?.fingerprint !== fingerprint) {
         //     throw new HttpException('', HttpStatus.BAD_REQUEST);
         // }
-
+        //
         // const accessToken = await this.tokenService.generateAccess();
         // const refreshToken = await this.tokenService.generateRefresh();
     }
