@@ -96,7 +96,7 @@ export class AuthService {
             throw new UnauthorizedException();
         }
 
-        const user = await this.usersService.find({ nickname: payload.id }).one();
+        const user = await this.usersService.find({ nickname: payload.nickname }).one();
         if (!user) {
             throw new UnauthorizedException();
         }
