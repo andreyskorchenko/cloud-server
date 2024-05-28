@@ -139,4 +139,8 @@ export class UsersService {
     updateDevices(id: string, devices: UserDevice[]) {
         return this.userModel.updateOne({ id: id }, { devices });
     }
+
+    findById(id: string) {
+        return this.userModel.findOne({ id });
+    }
 }
