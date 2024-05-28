@@ -122,7 +122,7 @@ export class UsersService {
         }
     }
 
-    findByIdOtp(id: string) {
+    findByOtpId(id: string) {
         return this.userModel.findOne({ 'otp.id': id });
     }
 
