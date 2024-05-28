@@ -96,30 +96,22 @@ export class AuthService {
             throw new UnauthorizedException();
         }
 
-        const user = await this.usersService.find({ nickname: payload.nickname }).one();
+        const user = await this.usersService.findById(payload.id);
         if (!user) {
             throw new UnauthorizedException();
         }
-
-        // const device = user.devices.find((device) => device.token === token);
-        // if (device?.fingerprint !== fingerprint) {
-        //     throw new HttpException('', HttpStatus.BAD_REQUEST);
-        // }
-        //
-        // const accessToken = await this.tokenService.generateAccess();
-        // const refreshToken = await this.tokenService.generateRefresh();
     }
 
     async otpConfirmation({ id, code }: OtpDto, fingerprint: string | null) {
-        const user = await this.usersService.findByIdOtp(id);
+        const user = await this.usersService.findByOtpId(id);
 
         if (!user?.otp) {
-            throw new GoneException(1);
+            throw new GoneException();
         }
 
         const isExpired = new Date(user.otp.createdAt).getTime() + user.otp.expires * 1000 < Date.now();
         if (isExpired || user.otp.attempts === 0) {
-            throw new ForbiddenException(2);
+            throw new ForbiddenException();
         }
 
         if (user.otp.code === code) {
@@ -149,10 +141,10 @@ export class AuthService {
             });
 
             if (attempts) {
-                throw new UnauthorizedException(3);
+                throw new UnauthorizedException();
             }
 
-            throw new GoneException(4);
+            throw new GoneException();
         }
     }
 }
