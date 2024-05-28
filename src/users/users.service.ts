@@ -97,7 +97,7 @@ export class UsersService {
             }
         }
 
-        return this.userModel.updateOne({ _id: user.id }, { devices });
+        return this.updateDevices(user.id, devices);
     }
 
     async emailConfirmation(token: string) {
@@ -134,5 +134,9 @@ export class UsersService {
         }
 
         return otp;
+    }
+
+    updateDevices(id: string, devices: UserDevice[]) {
+        return this.userModel.updateOne({ id: id }, { devices });
     }
 }
