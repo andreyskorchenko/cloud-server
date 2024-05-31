@@ -100,6 +100,31 @@ export class AuthService {
         if (!user) {
             throw new UnauthorizedException();
         }
+
+        const device = user.devices.find((device) => device.token === token);
+        if (!device) {
+            throw new UnauthorizedException();
+        }
+
+        if (device.fingerprint !== fingerprint) {
+            const devices = user.devices.filter((device) => device.token !== token);
+            await this.usersService.updateDevices(user.id, devices);
+            throw new UnauthorizedException();
+        }
+
+        const jwtPayload: JwtPayload = {
+            id: user.id,
+            nickname: user.nickname,
+            roles: user.roles,
+        };
+
+        const accessToken = await this.tokenService.generateAccess(jwtPayload);
+        const refreshToken = await this.tokenService.generateRefresh(jwtPayload);
+
+        return {
+            accessToken,
+            refreshToken,
+        };
     }
 
     async otpConfirmation({ id, code }: OtpDto, fingerprint: string | null) {
