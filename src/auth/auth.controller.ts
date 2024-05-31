@@ -46,6 +46,13 @@ export class AuthController {
     }
 
     @Get('refresh')
+    @UseInterceptors(
+        new ExcludeResponseInterceptor(['refreshToken']),
+        new SetCookieInterceptor('refreshToken', {
+            httpOnly: true,
+            maxAge: 2592000000,
+        }),
+    )
     async refresh(@Cookie('refreshToken') token: string | undefined, @Fingerprint() fingerprint: string | null) {
         return await this.authService.refresh(token, fingerprint);
     }
