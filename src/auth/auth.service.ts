@@ -121,6 +121,19 @@ export class AuthService {
         const accessToken = await this.tokenService.generateAccess(jwtPayload);
         const refreshToken = await this.tokenService.generateRefresh(jwtPayload);
 
+        const devices = user.devices.map((device) => {
+            if (device.token !== token) {
+                return device;
+            }
+
+            return {
+                ...device,
+                token: refreshToken,
+            };
+        });
+
+        await this.usersService.updateDevices(user.id, devices);
+
         return {
             accessToken,
             refreshToken,
