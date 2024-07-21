@@ -87,7 +87,7 @@ export class AuthService {
     }
 
     async refresh(token: string | undefined, fingerprint: string | null) {
-        if (!token || !fingerprint) {
+        if (!token) {
             throw new UnauthorizedException();
         }
 
