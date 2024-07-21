@@ -39,7 +39,7 @@ export class AuthService {
 
         const otp = generateOtp();
         const html = await this.templatesService.compile('otp');
-        await this.mailService.send({
+        void this.mailService.send({
             to: user.email,
             subject: 'OTP Confirmation',
             html: html({ code: otp.code }),
