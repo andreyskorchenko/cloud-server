@@ -91,6 +91,7 @@ export class AuthService {
             throw new UnauthorizedException();
         }
 
+        // TODO: check token on exists to blacklist
         const payload = await this.tokenService.verifyRefresh(token);
         if (!payload) {
             throw new UnauthorizedException();
@@ -107,6 +108,7 @@ export class AuthService {
         }
 
         if (device.fingerprint !== fingerprint) {
+            // TODO: add token to blacklist and after remove
             const devices = user.devices.filter((device) => device.token !== token);
             await this.usersService.updateDevices(user.id, devices);
             throw new UnauthorizedException();
