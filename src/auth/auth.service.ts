@@ -60,7 +60,7 @@ export class AuthService {
         const password = await hash(userDto.password, salt);
         const createdUser = await this.usersService.create({ ...userDto, password });
         const html = await this.templatesService.compile('email');
-        await this.mailService.send({
+        void this.mailService.send({
             to: createdUser.email,
             subject: 'EMAIL Confirmation',
             html: html({
